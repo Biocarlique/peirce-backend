@@ -1,0 +1,101 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// 1. Таблица Пользователей
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  // Связи: у одного пользователя может быть много наблюдений и эвристик в "копилке"
+  observations Observation[]
+  successVault SuccessVault[]
+}
+
+// 2. Этап 1: Наблюдение
+model Observation {
+  id           String   @id @default(uuid())
+  userId       String
+  situation    String   // Ситуация
+  trigger      String   // Триггер
+  thoughts     String   // Мысли
+  emotions     String   // Эмоции
+  actions      String   // Действия
+  consequences String   // Последствия
+  createdAt    DateTime @default(now())
+
+  user         User         @relation(fields: [userId], references: [id])
+  hypotheses   Hypothesis[]
+}
+
+// Статусы гипотезы: тестируется, успешна, опровергнута
+enum HypothesisStatus {
+  TESTING
+  SUCCESS
+  REFUTED
+}
+
+// 3. Этап 2: Гипотеза
+model Hypothesis {
+  id               String           @id @default(uuid())
+  observationId    String
+  explanation      String           // Объяснение
+  solution         String           // Решение
+  successCondition String           // Условие успеха (прогноз)
+  failCondition    String           // Условие провала (прогноз)
+  preparation      String           // Подготовка
+  heuristic        String           // Эвристика
+  status           HypothesisStatus @default(TESTING)
+
+  // Критерии проверки (с дефолтными значениями из твоего ТЗ)
+  minDays          Int @default(7)
+  maxFailures      Int @default(2)
+  maxSkips         Int @default(2)
+  targetWinRate    Int @default(80) // в процентах
+
+  createdAt        DateTime @default(now())
+
+  observation      Observation     @relation(fields: [observationId], references: [id])
+  trackingEntries  TrackingEntry[]
+  successVaults    SuccessVault[]
+}
+
+// 4. Этап 3: Практика (Записи трекинга)
+model TrackingEntry {
+  id               String   @id @default(uuid())
+  hypothesisId     String
+  date             DateTime @default(now())
+  situationDetails String?  // Особенности ситуации (опционально)
+  attemptMade      Boolean  // Наличие попытки
+  isSuccess        Boolean? // Результат (null, если attemptMade === false)
+  notes            String?  // Заметки
+  isExternalFactor Boolean  @default(false) // Галочка "Сторонние факторы" (чтобы пропустить ошибку)
+
+  createdAt        DateTime @default(now())
+
+  hypothesis       Hypothesis @relation(fields:[hypothesisId], references: [id])
+}
+
+// 5. Копилка эвристик
+model SuccessVault {
+  id            String   @id @default(uuid())
+  userId        String
+  hypothesisId  String
+  heuristicText String   // Текст эвристики
+  createdAt     DateTime @default(now())
+
+  user          User       @relation(fields: [userId], references: [id])
+  hypothesis    Hypothesis @relation(fields:[hypothesisId], references: [id])
+}
