@@ -1,0 +1,9 @@
+import { Module } from '@nestjs/common';
+import { ObservationService } from './observation.service';
+import { ObservationController } from './observation.controller';
+
+@Module({
+  providers: [ObservationService],
+  controllers: [ObservationController]
+})
+export class ObservationModule {}
