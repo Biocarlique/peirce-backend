@@ -41,4 +41,13 @@ export class HypothesisService {
             orderBy: { createdAt: 'desc' },
         });
     }
+
+    async findOne(userId: string, hypothesisId: string) {
+        return this.prisma.hypothesis.findFirst({
+            where: {
+                id: hypothesisId,
+                observation: { userId },
+            },
+        });
+    }
 }
