@@ -3,7 +3,8 @@ import { HypothesisController } from './hypothesis.controller';
 import { HypothesisService } from './hypothesis.service';
 
 @Module({
-  controllers: [HypothesisController],
-  providers: [HypothesisService]
+    controllers: [HypothesisController],
+    providers: [HypothesisService],
+    exports: [HypothesisService],
 })
 export class HypothesisModule {}
