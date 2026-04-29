@@ -6,9 +6,10 @@ import { AuthModule } from './auth/auth.module';
 import { ObservationModule } from './observation/observation.module';
 import { HypothesisModule } from './hypothesis/hypothesis.module';
 import { TrackingModule } from './tracking/tracking.module';
+import { EvaluationModule } from './evaluation/evaluation.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, ObservationModule, HypothesisModule, TrackingModule],
+  imports: [PrismaModule, AuthModule, ObservationModule, HypothesisModule, TrackingModule, EvaluationModule],
   controllers: [AppController],
   providers: [AppService],
 })

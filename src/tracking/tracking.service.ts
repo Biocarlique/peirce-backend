@@ -2,12 +2,14 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTrackingEntryDto } from './dto/tracking-entry.dto';
 import { HypothesisService } from '../hypothesis/hypothesis.service';
+import { EvaluationService } from '../evaluation/evaluation.service';
 
 @Injectable()
 export class TrackingService {
     constructor(
         private prisma: PrismaService,
         private hypothesisService: HypothesisService,
+        private evaluationService: EvaluationService,
     ) {}
 
     async create(userId: string, data: CreateTrackingEntryDto) {
@@ -19,7 +21,7 @@ export class TrackingService {
         if (!relatedHypothesis)
             throw new NotFoundException('Hypothesis not found');
 
-        return this.prisma.trackingEntry.create({
+        const newEntry = await this.prisma.trackingEntry.create({
             data: {
                 hypothesisId: data.hypothesisId,
                 ...(data.date && { date: data.date }),
@@ -30,6 +32,9 @@ export class TrackingService {
                 notes: data.notes,
             },
         });
+
+        await this.evaluationService.evaluateHypothesis(data.hypothesisId);
+        return newEntry;
     }
 
     async findAll(userId: string, hypothesisId: string) {
